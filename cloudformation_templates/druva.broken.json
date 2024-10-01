@@ -1,0 +1,221 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Conditions": {
+      "orgEnabled": {
+        "Fn::Equals": [
+          {
+            "Ref": "isOrg"
+          },
+          "Enabled"
+        ]
+      }
+    },
+    "Description": "Wiz AWS standard org deployment",
+    "Metadata": {
+      "AWS::CloudFormation::Interface": {
+        "ParameterGroups": [
+          {
+            "Label": {
+              "default": "Wiz Access Role"
+            },
+            "Parameters": [
+              "WizRoleName",
+              "ExternalId",
+              "RoleARN"
+            ]
+          },
+          {
+            "Label": {
+              "default": "Wiz Org Deployment"
+            },
+            "Parameters": [
+              "orgId",
+              "isOrg"
+            ]
+          },
+        ],
+        "ParameterLabels": {
+          "ExternalId": {
+            "default": "Connector External ID"
+          },
+          "RoleARN": {
+            "default": "AWS Trust Policy Role"
+          },
+          "WizRoleName": {
+            "default": "Wiz Role Name"
+          },
+          "isOrg": {
+            "default": "Enable Wiz Org Deployment"
+          },
+          "orgId": {
+            "default": "Organizational Unit Id"
+          }
+        }
+      },
+      "Tags": [
+        {
+          "wiz_version_last_updated": "2024-09-10"
+        }
+      ]
+    },
+    "Outputs": {
+      "ExternalID": {
+        "Description": "Your External ID",
+        "Value": {
+          "Ref": "ExternalId"
+        }
+      },
+      "RoleARNID": {
+        "Description": "Your Role ARN ID",
+        "Value": {
+          "Fn::GetAtt": [
+            "Role",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "Parameters": {
+      "ExternalId": {
+        "AllowedPattern": "\\S{8}-\\S{4}-\\S{4}-\\S{4}-\\S{12}",
+        "Description": "Enter the External ID of the Wiz connector. This is a nonce that will be used by our service to assume the role in your account.",
+        "Type": "String"
+      },
+      "RoleARN": {
+        "AllowedPattern": "arn:aws(-us-gov|-cn)?:iam::[0-9]+:role/.*",
+        "Description": "Enter the AWS Trust Policy Role ARN for your Wiz data center. You can retrieve it under User Settings, Tenant in the Wiz portal.",
+        "Type": "String"
+      },
+      "WizRoleName": {
+        "Default": "WizAccess-Role",
+        "Description": "Enter the IAM role name that will be created in your AWS account, the default is WizAccess-Role",
+        "Type": "String"
+      },
+      "isOrg": {
+        "AllowedValues": [
+          "Enabled",
+          "Disabled"
+        ],
+        "Default": "Disabled",
+        "Description": "Enable org deploy",
+        "Type": "String"
+      },
+      "orgId": {
+        "Default": "",
+        "Description": "The OU ID of the AWS Organization where we should deploy, preferably the root OU. This value is mandatory when isOrg is Enabled. You can submit one value, or a space separated list of multiple OUs",
+        "Type": "String"
+      }
+    },
+    "Resources": {
+      "Role": {
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Statement": [
+              {
+                "Action": "sts:AssumeRole",
+                "Condition": {
+                  "StringEquals": {
+                    "sts:ExternalId": {
+                      "Ref": "ExternalId"
+                    }
+                  }
+                },
+                "Effect": "Allow",
+                "Principal": {
+                  "AWS": {
+                    "Ref": "RoleARN"
+                  }
+                }
+              }
+            ],
+            "Version": "2012-10-17"
+          },
+          "ManagedPolicyArns": [
+            {
+              "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/job-function/ViewOnlyAccess"
+            },
+            {
+              "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/SecurityAudit"
+            }
+          ],
+          "RoleName": {
+            "Ref": "WizRoleName"
+          },
+          "Tags": [
+            {
+              "Key": "wiz_version_last_updated",
+              "Value": "2024-09-10"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::Role"
+      },
+      "WizAccessRoleStackSet": {
+        "Condition": "orgEnabled",
+        "Properties": {
+          "AutoDeployment": {
+            "Enabled": true,
+            "RetainStacksOnAccountRemoval": false
+          },
+          "Capabilities": [
+            "CAPABILITY_IAM",
+            "CAPABILITY_NAMED_IAM"
+          ],
+          "Description": "Wiz AWS standard org deployment",
+          "ManagedExecution": {
+            "Active": true
+          },
+          "OperationPreferences": {
+            "FailureTolerancePercentage": 50,
+            "MaxConcurrentPercentage": 50,
+            "RegionConcurrencyType": "PARALLEL"
+          },
+          "Parameters": [
+            {
+              "ParameterKey": "ExternalId",
+              "ParameterValue": {
+                "Ref": "ExternalId"
+              }
+            },
+            {
+              "ParameterKey": "RoleARN",
+              "ParameterValue": {
+                "Ref": "RoleARN"
+              }
+            },
+            {
+              "ParameterKey": "WizRoleName",
+              "ParameterValue": {
+                "Ref": "WizRoleName"
+              }
+            }
+          ],
+          "PermissionModel": "SERVICE_MANAGED",
+          "StackInstancesGroup": [
+            {
+              "DeploymentTargets": {
+                "OrganizationalUnitIds": {
+                  "Fn::Split": [
+                    " ",
+                    {
+                      "Ref": "orgId"
+                    }
+                  ]
+                }
+              },
+              "Regions": [
+                {
+                  "Ref": "AWS::Region"
+                }
+              ]
+            }
+          ],
+          "StackSetName": {
+            "Ref": "AWS::StackName"
+          },
+          "TemplateURL": "https://ad-test-bucket-tiering.s3.us-east-2.amazonaws.com/wiz-aws-cft-modified-no-workload-scanning-v3.json"
+        },
+        "Type": "AWS::CloudFormation::StackSet"
+      }
+    }
+  }

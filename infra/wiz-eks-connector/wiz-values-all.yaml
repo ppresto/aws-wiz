@@ -1,0 +1,43 @@
+#debug:true
+global:
+  wizApiToken:
+    secret:
+      create: false # We create it manually
+      name: "wiz-api-token"
+    clientEndpoint: "" # Set to 'gov' or 'fedramp' for gov/fedramp tenants only, otherwise leave blank.
+
+
+wiz-kubernetes-connector:
+  enabled: true
+  autoCreateConnector:
+    connectorName: "presto-eks-cluster"
+  broker:
+    enabled: true
+  # Use this if you are deploying on federal environments with FIPS endpoints.
+  #image:
+  #  registry: public-registry.wiz.io/wiz-app
+  #  repository: wiz-broker-fips
+
+wiz-sensor:
+  enabled: true
+  imagePullSecret:
+    create: false # We create it manually
+    name: "sensor-image-pull"
+
+wiz-admission-controller:
+  enabled: true
+  # Use this if you are deploying on federal environments with FIPS endpoints.
+  #image:
+  #  registry: public-registry.wiz.io/wiz-app
+  #  repository: wiz-admission-controller-fips
+
+  # Configure Kubernetes Audit Log Collection
+  # This webhook sends the audit logs to Wiz, and should never block any requests. [Learn more](doc:kubernetes-audit-log-collector).
+  kubernetesAuditLogsWebhook:
+    enabled: false
+
+  # Enforce Image Trust with Wiz AC and CLI. [Learn more](doc:ac-image-trust-cicd).
+  # imageIntegrityWebhook:
+  #   enabled: true
+  #   policies:
+  #   - my-image-trust-policy

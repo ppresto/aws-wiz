@@ -1,0 +1,242 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Conditions": {
+      "RDSLogsScanning": {
+        "Fn::Equals": [
+          {
+            "Ref": "RDSLogsScanning"
+          },
+          "Disabled"
+        ]
+      },
+      "S3AWSLogsScanning": {
+        "Fn::Equals": [
+          {
+            "Ref": "S3AWSLogsScanning"
+          },
+          "Disabled"
+        ]
+      }
+    },
+    "Description": "Wiz AWS standard deployment",
+    "Metadata": {
+      "AWS::CloudFormation::Interface": {
+        "ParameterGroups": [
+          {
+            "Label": {
+              "default": "Wiz Access Role"
+            },
+            "Parameters": [
+              "WizRoleName",
+              "ExternalId",
+              "RoleARN",
+              "LightsailScanning",
+              "DataScanning",
+              "EKSScanning"
+            ]
+          },
+          {
+            "Label": {
+              "default": "Wiz Defend"
+            },
+            "Parameters": [
+              "S3AWSLogsScanning",
+              "RDSLogsScanning"
+            ]
+          }
+        ],
+        "ParameterLabels": {
+          "DataScanning": {
+            "default": "Enable Data Scanning"
+          },
+          "EKSScanning": {
+            "default": "Enable EKS scanning"
+          },
+          "ExternalId": {
+            "default": "Connector External ID"
+          },
+          "LightsailScanning": {
+            "default": "Enable Lightsail Scanning"
+          },
+          "RDSLogsScanning": {
+            "default": "Enable RDS Logs Scanning"
+          },
+          "RoleARN": {
+            "default": "AWS Trust Policy Role"
+          },
+          "S3AWSLogsScanning": {
+            "default": "Enable S3 AWS Logs Scanning"
+          },
+          "WizRoleName": {
+            "default": "Wiz Role Name"
+          }
+        }
+      },
+      "Tags": [
+        {
+          "wiz_version_last_updated": "2024-08-27"
+        }
+      ]
+    },
+    "Outputs": {
+      "ExternalID": {
+        "Description": "Your External ID",
+        "Value": {
+          "Ref": "ExternalId"
+        }
+      },
+      "RoleARNID": {
+        "Description": "Your Role ARN ID",
+        "Value": {
+          "Fn::GetAtt": [
+            "Role",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "Parameters": {
+      "ExternalId": {
+        "AllowedPattern": "\\S{8}-\\S{4}-\\S{4}-\\S{4}-\\S{12}",
+        "Description": "Enter the External ID of the Wiz connector. This is a nonce that will be used by our service to assume the role in your account.",
+        "Type": "String"
+      },
+      "RDSLogsScanning": {
+        "AllowedValues": [
+          "Enabled",
+          "Disabled"
+        ],
+        "Default": "Enabled",
+        "Description": "Enable RDS logs scanning",
+        "Type": "String"
+      },
+      "RoleARN": {
+        "AllowedPattern": "arn:aws(-us-gov|-cn)?:iam::[0-9]+:role/.*",
+        "Description": "Enter the AWS Trust Policy Role ARN for your Wiz data center. You can retrieve it from User Settings, Tenant in the Wiz portal.",
+        "Type": "String"
+      },
+      "S3AWSLogsScanning": {
+        "AllowedValues": [
+          "Enabled",
+          "Disabled"
+        ],
+        "Default": "Enabled",
+        "Description": "Enable retrieval of AWSLogs/* objects from S3 buckets",
+        "Type": "String"
+      },
+      "WizRoleName": {
+        "Default": "WizAccess-Role",
+        "Description": "Enter the IAM role name that will be created in your AWS account, the default is WizAccess-Role",
+        "Type": "String"
+      }
+    },
+    "Resources": {
+      "Role": {
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Statement": [
+              {
+                "Action": "sts:AssumeRole",
+                "Condition": {
+                  "StringEquals": {
+                    "sts:ExternalId": {
+                      "Ref": "ExternalId"
+                    }
+                  }
+                },
+                "Effect": "Allow",
+                "Principal": {
+                  "AWS": {
+                    "Ref": "RoleARN"
+                  }
+                }
+              }
+            ],
+            "Version": "2012-10-17"
+          },
+          "ManagedPolicyArns": [
+            {
+              "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/job-function/ViewOnlyAccess"
+            },
+            {
+              "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/SecurityAudit"
+            }
+          ],
+          "RoleName": {
+            "Ref": "WizRoleName"
+          },
+          "Tags": [
+            {
+              "Key": "wiz_version_last_updated",
+              "Value": "2024-08-27"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::Role"
+      },
+      "WizFullPolicy": {
+        "Properties": {
+          "PolicyDocument": {
+            "Statement": [
+              {
+                "Action": [
+                  "ec2:GetEbsEncryptionByDefault",
+                  "ec2:GetInstanceMetadataDefaults",
+                  "ec2:GetSnapshotBlockPublicAccessState",
+                  "ecr:BatchGetImage",
+                  "ecr:GetAuthorizationToken",
+                  "ecr:GetDownloadUrlForLayer",
+                  "eks:ListTagsForResource",
+                  "ssm:GetDocument",
+                  "ssm:GetParameters",
+                  "lambda:GetFunction",
+                  "lambda:GetLayerVersion"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
+              },
+              {
+                "Action": "cassandra:Select",
+                "Effect": "Allow",
+                "Resource": [
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:cassandra:*:*:/keyspace/system_schema/table/keyspaces"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:cassandra:*:*:/keyspace/system_schema/table/tables"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:cassandra:*:*:/keyspace/system_schema/table/columns"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:cassandra:*:*:/keyspace/system_schema_mcs/table/keyspaces"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:cassandra:*:*:/keyspace/system_schema_mcs/table/tables"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:cassandra:*:*:/keyspace/system_schema_mcs/table/columns"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:cassandra:*:*:/keyspace/system_schema_mcs/table/tags"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:cassandra:*:*:/keyspace/system_multiregion_info/table/tables"
+                  }
+                ],
+                "Sid": "WizReadOnlyAccessToAmazonKeyspacesMetadata"
+              }
+            ],
+            "Version": "2012-10-17"
+          },
+          "PolicyName": "WizFullPolicy",
+          "Roles": [
+            {
+              "Ref": "Role"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::Policy"
+      }
+    }
+  }

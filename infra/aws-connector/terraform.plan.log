@@ -1,0 +1,529 @@
+Terraform will perform the following actions:
+
+  # module.wiz.aws_iam_policy.tf-policy-data[0] will be created
+  + resource "aws_iam_policy" "tf-policy-data" {
+      + arn              = (known after apply)
+      + attachment_count = (known after apply)
+      + id               = (known after apply)
+      + name             = "WizDataScanningPolicy"
+      + name_prefix      = (known after apply)
+      + path             = "/"
+      + policy           = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action   = [
+                          + "redshift:DeleteClusterSnapshot",
+                          + "redshift:AuthorizeSnapshotAccess",
+                          + "redshift:RevokeSnapshotAccess",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:redshift:*:*:snapshot:*wiz-autogen-*"
+                    },
+                  + {
+                      + Action   = [
+                          + "redshift:CopyClusterSnapshot",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "redshift:CreateTags",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:redshift:*:*:snapshot:*/*"
+                    },
+                  + {
+                      + Action   = [
+                          + "redshift:DescribeClusterSnapshots",
+                          + "redshift:DescribeClusters",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action    = [
+                          + "redshift:CreateClusterSnapshot",
+                        ]
+                      + Condition = {
+                          + StringEquals = {
+                              + "aws:RequestTag/wiz" = "auto-gen-snapshot"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "rds:DescribeDBClusters",
+                          + "rds:DescribeDBClusterSnapshots",
+                          + "rds:DescribeDBInstances",
+                          + "rds:DescribeDBSnapshots",
+                          + "rds:DescribeDBSubnetGroups",
+                          + "rds:ListTagsForResource",
+                          + "rds:AddTagsToResource",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "rds:DeleteDBClusterSnapshot",
+                          + "rds:ModifyDBClusterSnapshotAttribute",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:rds:*:*:cluster-snapshot:wiz-autogen-*"
+                    },
+                  + {
+                      + Action   = [
+                          + "rds:DeleteDBSnapshot",
+                          + "rds:ModifyDBSnapshotAttribute",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:rds:*:*:snapshot:wiz-autogen-*"
+                    },
+                  + {
+                      + Action   = [
+                          + "rds:CopyDBClusterSnapshot",
+                          + "rds:CopyDBSnapshot",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action    = [
+                          + "rds:CreateDBClusterSnapshot",
+                          + "rds:CreateDBSnapshot",
+                        ]
+                      + Condition = {
+                          + StringEquals = {
+                              + "rds:req-tag/wiz" = "auto-gen-snapshot"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "s3:GetObject",
+                          + "s3:ListBucket",
+                          + "s3express:CreateSession",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action    = [
+                          + "kms:CreateGrant",
+                          + "kms:ReEncrypt*",
+                        ]
+                      + Condition = {
+                          + StringLike = {
+                              + "kms:ViaService" = "rds.*.amazonaws.com"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "dynamodb:Scan",
+                          + "dynamodb:DescribeTable",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + policy_id        = (known after apply)
+      + tags_all         = (known after apply)
+    }
+
+  # module.wiz.aws_iam_role.user-role-tf will be created
+  + resource "aws_iam_role" "user-role-tf" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Condition = {
+                          + StringEquals = {
+                              + "sts:ExternalId" = "b1af0ff4-f15b-46f0-aa77-d928f254babe"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + AWS = "arn:aws:iam::197171649850:role/prod-us20-AssumeRoleDelegator"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "WizAccess-Role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags                  = {
+          + "wiz_version_last_updated" = "2024-07-22"
+        }
+      + tags_all              = {
+          + "wiz_version_last_updated" = "2024-07-22"
+        }
+      + unique_id             = (known after apply)
+    }
+
+  # module.wiz.aws_iam_role_policy.tf-policy will be created
+  + resource "aws_iam_role_policy" "tf-policy" {
+      + id          = (known after apply)
+      + name        = "WizFullPolicy"
+      + name_prefix = (known after apply)
+      + policy      = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action   = [
+                          + "acm:GetCertificate",
+                          + "acm-pca:GetCertificateAuthorityCertificate",
+                          + "amplify:GetApp",
+                          + "amplify:GetBackendEnvironment",
+                          + "amplify:ListApps",
+                          + "amplify:ListBackendEnvironments",
+                          + "amplify:ListBranches",
+                          + "amplify:ListDomainAssociations",
+                          + "amplify:ListTagsForResource",
+                          + "amplifybackend:GetBackend",
+                          + "apigateway:GET",
+                          + "aoss:ListCollections",
+                          + "aoss:ListSecurityPolicies",
+                          + "aoss:BatchGetCollection",
+                          + "aoss:GetSecurityPolicy",
+                          + "aoss:ListTagsForResource",
+                          + "aoss:ListAccessPolicies",
+                          + "aoss:GetAccessPolicy",
+                          + "appconfig:ListApplications",
+                          + "appconfig:ListConfigurationProfiles",
+                          + "appconfig:GetConfigurationProfile",
+                          + "appconfig:ListTagsForResource",
+                          + "appflow:DescribeFlow",
+                          + "appsync:GetApiAssociation",
+                          + "appstream:DescribeStacks",
+                          + "appstream:ListAssociatedFleets",
+                          + "appstream:DescribeFleets",
+                          + "appstream:ListTagsForResource",
+                          + "appstream:DescribeUserStackAssociations",
+                          + "backup:GetBackupPlan",
+                          + "backup:GetBackupSelection",
+                          + "bedrock:ListAgents",
+                          + "bedrock:GetAgent",
+                          + "bedrock:ListAgentKnowledgeBases",
+                          + "bedrock:ListAgentActionGroups",
+                          + "bedrock:GetAgentActionGroup",
+                          + "bedrock:ListKnowledgeBases",
+                          + "bedrock:GetKnowledgeBase",
+                          + "bedrock:ListDataSources",
+                          + "bedrock:GetDataSource",
+                          + "cloudsearch:DescribeAvailabilityOptions",
+                          + "codepipeline:ListTagsForResource",
+                          + "codestar-notifications:ListNotificationRules",
+                          + "codestar-notifications:DescribeNotificationRule",
+                          + "databrew:DescribeRecipe",
+                          + "dynamodb:GetResourcePolicy",
+                          + "ec2:GetEbsEncryptionByDefault",
+                          + "ec2:GetInstanceMetadataDefaults",
+                          + "ec2:GetSnapshotBlockPublicAccessState",
+                          + "ecr-public:DescribeImages",
+                          + "ecr-public:GetAuthorizationToken",
+                          + "ecr-public:ListTagsForResource",
+                          + "ecr:BatchGetImage",
+                          + "ecr:DescribeImages",
+                          + "ecr:GetAuthorizationToken",
+                          + "ecr:GetDownloadUrlForLayer",
+                          + "ecr:GetRegistryPolicy",
+                          + "ecr:ListTagsForResource",
+                          + "eks:ListTagsForResource",
+                          + "glue:GetConnection",
+                          + "identitystore:Describe*",
+                          + "identitystore:List*",
+                          + "kendra:DescribeDataSource",
+                          + "kinesisanalytics:DescribeApplication",
+                          + "kinesisvideo:GetDataEndpoint",
+                          + "lambda:GetFunction",
+                          + "lambda:GetLayerVersion",
+                          + "lightsail:GetRelationalDatabases",
+                          + "macie2:GetFindings",
+                          + "macie2:GetAutomatedDiscoveryConfiguration",
+                          + "macie2:GetMacieSession",
+                          + "qldb:DescribeJournalKinesisStream",
+                          + "qldb:ListJournalKinesisStreamsForLedger",
+                          + "qldb:ListTagsForResource",
+                          + "s3:GetIntelligentTieringConfiguration",
+                          + "ssm:GetDocument",
+                          + "ssm:GetParameters",
+                          + "sso-directory:Describe*",
+                          + "sso-directory:ListMembersInGroup",
+                          + "wafv2:GetIPSet",
+                          + "wafv2:GetRuleGroup",
+                          + "timestream:DescribeEndpoints",
+                          + "timestream:DescribeBatchLoadTask",
+                          + "timestream:DescribeScheduledQuery",
+                          + "timestream:ListBatchLoadTasks",
+                          + "timestream:ListDatabases",
+                          + "timestream:ListScheduledQueries",
+                          + "timestream:ListTables",
+                          + "timestream:ListTagsForResource",
+                          + "resource-groups:ListGroups",
+                          + "resource-groups:GetGroupConfiguration",
+                          + "resource-groups:GetGroupQuery",
+                          + "resource-groups:GetTags",
+                          + "resource-groups:GetAccountSettings",
+                          + "cloudhsm:DescribeClusters",
+                          + "memorydb:ListTags",
+                          + "s3express:ListAllMyDirectoryBuckets",
+                          + "s3express:GetBucketPolicy",
+                          + "snowball:DescribeJob",
+                          + "ds:DescribeSharedDirectories",
+                          + "ds:ListTagsForResource",
+                          + "ds:DescribeTrusts",
+                          + "ds:DescribeSettings",
+                          + "account:GetContactInformation",
+                          + "detective:ListOrganizationAdminAccount",
+                          + "detective:ListTagsForResource",
+                          + "redshift-serverless:ListScheduledActions",
+                          + "scheduler:GetSchedule",
+                          + "scheduler:ListTagsForResource",
+                          + "scheduler:ListSchedules",
+                          + "redshift-serverless:GetScheduledAction",
+                          + "servicecatalog:DescribePortfolio",
+                          + "servicecatalog:SearchProductsAsAdmin",
+                          + "servicecatalog:DescribeProductAsAdmin",
+                          + "lookoutvision:DescribeProject",
+                          + "qbusiness:ListApplications",
+                          + "qbusiness:GetApplication",
+                          + "qbusiness:ListTagsForResource",
+                          + "aps:ListWorkspaces",
+                          + "codeguru-reviewer:ListRepositoryAssociations",
+                          + "codeguru-reviewer:DescribeRepositoryAssociation",
+                          + "datazone:ListDomains",
+                          + "datazone:GetDomain",
+                          + "geo:DescribeMap",
+                          + "geo:ListPlaceIndexes",
+                          + "geo:DescribePlaceIndex",
+                          + "geo:ListRouteCalculators",
+                          + "geo:DescribeRouteCalculator",
+                          + "geo:ListGeofenceCollections",
+                          + "geo:DescribeGeofenceCollection",
+                          + "geo:ListTrackers",
+                          + "geo:DescribeTracker",
+                          + "geo:ListKeys",
+                          + "geo:DescribeKey",
+                          + "voiceid:ListDomains",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "ec2:CopySnapshot",
+                          + "ec2:CreateSnapshot",
+                          + "kms:CreateKey",
+                          + "kms:DescribeKey",
+                          + "ec2:GetEbsEncryptionByDefault",
+                          + "ec2:DescribeSnapshots",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action    = [
+                          + "ec2:CreateTags",
+                        ]
+                      + Condition = {
+                          + StringEquals = {
+                              + "ec2:CreateAction" = [
+                                  + "CreateSnapshot",
+                                  + "CopySnapshot",
+                                ]
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "arn:aws:ec2:*::snapshot/*"
+                      + Sid       = "AllowWizToCreateTagsOnCreatedAndCopiedSnapshots"
+                    },
+                  + {
+                      + Action   = "kms:CreateAlias"
+                      + Effect   = "Allow"
+                      + Resource = [
+                          + "arn:aws:kms:*:*:alias/wizKey",
+                          + "arn:aws:kms:*:*:key/*",
+                        ]
+                    },
+                  + {
+                      + Action    = [
+                          + "kms:CreateGrant",
+                          + "kms:ReEncryptFrom",
+                        ]
+                      + Condition = {
+                          + StringLike = {
+                              + "kms:ViaService" = "ec2.*.amazonaws.com"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "*"
+                    },
+                  + {
+                      + Action    = [
+                          + "kms:GetKeyPolicy",
+                          + "kms:PutKeyPolicy",
+                        ]
+                      + Condition = {
+                          + StringEquals = {
+                              + "aws:ResourceTag/wiz" = "auto-gen-cmk"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "*"
+                    },
+                  + {
+                      + Action    = [
+                          + "ec2:DeleteSnapshot",
+                        ]
+                      + Condition = {
+                          + StringEquals = {
+                              + "ec2:ResourceTag/wiz" = "auto-gen-snapshot"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "*"
+                    },
+                  + {
+                      + Action    = [
+                          + "ec2:ModifySnapshotAttribute",
+                        ]
+                      + Condition = {
+                          + StringEquals = {
+                              + "ec2:ResourceTag/wiz" = [
+                                  + "auto-gen-snapshot",
+                                  + "shareable-resource",
+                                ]
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "*"
+                    },
+                  + {
+                      + Action    = [
+                          + "ec2:CreateVolume",
+                        ]
+                      + Condition = {
+                          + StringEquals = {
+                              + "aws:RequestTag/wiz" = "auto-gen-volume"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "*"
+                      + Sid       = "AllowWizToCreateTaggedVolumes"
+                    },
+                  + {
+                      + Action    = "ec2:CreateTags"
+                      + Condition = {
+                          + StringEquals = {
+                              + "ec2:CreateAction" = "CreateVolume"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "*"
+                      + Sid       = "AllowWizToCreateTagsOnCreatedVolumes"
+                    },
+                  + {
+                      + Action    = [
+                          + "ec2:DeleteVolume",
+                        ]
+                      + Condition = {
+                          + StringEquals = {
+                              + "ec2:ResourceTag/wiz" = "auto-gen-volume"
+                            }
+                        }
+                      + Effect    = "Allow"
+                      + Resource  = "*"
+                      + Sid       = "AllowWizToDeleteTaggedVolumes"
+                    },
+                  + {
+                      + Action   = [
+                          + "ec2:DescribeVolumes",
+                          + "ec2:DescribeAvailabilityZones",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                      + Sid      = "WizComplementaryPermissionsForTemporaryVolumes"
+                    },
+                  + {
+                      + Action   = [
+                          + "s3:GetObject",
+                          + "s3:GetBucketLocation",
+                          + "s3:GetObjectTagging",
+                          + "s3:ListBucket",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = [
+                          + "arn:aws:s3:::*terraform*",
+                          + "arn:aws:s3:::*tfstate*",
+                          + "arn:aws:s3:::*tf?state*",
+                          + "arn:aws:s3:::*cloudtrail*",
+                          + "arn:aws:s3:::elasticbeanstalk-*",
+                          + "arn:aws:s3:::amplify-*-deployment/*",
+                        ]
+                      + Sid      = "WizAccessS3"
+                    },
+                  + {
+                      + Action   = "cassandra:Select"
+                      + Effect   = "Allow"
+                      + Resource = [
+                          + "arn:aws:cassandra:*:*:/keyspace/system_schema/table/keyspaces",
+                          + "arn:aws:cassandra:*:*:/keyspace/system_schema/table/tables",
+                          + "arn:aws:cassandra:*:*:/keyspace/system_schema/table/columns",
+                          + "arn:aws:cassandra:*:*:/keyspace/system_schema_mcs/table/keyspaces",
+                          + "arn:aws:cassandra:*:*:/keyspace/system_schema_mcs/table/tables",
+                          + "arn:aws:cassandra:*:*:/keyspace/system_schema_mcs/table/columns",
+                          + "arn:aws:cassandra:*:*:/keyspace/system_schema_mcs/table/tags",
+                          + "arn:aws:cassandra:*:*:/keyspace/system_multiregion_info/table/tables",
+                        ]
+                      + Sid      = "WizReadOnlyAccessToAmazonKeyspacesMetadata"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + role        = (known after apply)
+    }
+
+  # module.wiz.aws_iam_role_policy_attachment.data-scanning-attach[0] will be created
+  + resource "aws_iam_role_policy_attachment" "data-scanning-attach" {
+      + id         = (known after apply)
+      + policy_arn = (known after apply)
+      + role       = "WizAccess-Role"
+    }
+
+  # module.wiz.aws_iam_role_policy_attachment.secutiry_audit_role_policy_attach will be created
+  + resource "aws_iam_role_policy_attachment" "secutiry_audit_role_policy_attach" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/SecurityAudit"
+      + role       = "WizAccess-Role"
+    }
+
+  # module.wiz.aws_iam_role_policy_attachment.view_only_access_role_policy_attach will be created
+  + resource "aws_iam_role_policy_attachment" "view_only_access_role_policy_attach" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess"
+      + role       = "WizAccess-Role"
+    }
+
+Plan: 6 to add, 0 to change, 0 to destroy.

@@ -1,0 +1,5 @@
+#!/bin/bash
+WIZ_SERVICE_ACCOUNT_ID=wgxq75hrlndpbktx3eupevf2xzpwjm65tphv5evhr6t744gkzvawm
+WIZ_SERVICE_ACCOUNT_TOKEN=M2kIH7ZWFwUeFHwArgZc1XD8DrTcarNgrPzmxsLmVs6VP4c70hJz7uiYrrc9CIej
+SENSOR_PULLKEY_USERNAME=wizio-repo-b1af0ff4-f15b-46f0-aa77-d928f254babe
+SENSOR_PULLKEY_PASSWORD=1mKRv3oL/kIMWl+ygFJBWvpc6ch50owxKS9satjfZd+ACRAkz79n
